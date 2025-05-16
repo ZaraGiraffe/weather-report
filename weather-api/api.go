@@ -8,7 +8,7 @@ import (
 	"io"
 )
 
-func CreateUrl(conf config.WeatherApiConfig, city string) string {
+func CreateUrl(conf *config.WeatherApiConfig, city string) string {
 	return fmt.Sprintf("%s/current.json?key=%s&q=%s", conf.Url, conf.ApiKey, city) 
 }
 
@@ -36,9 +36,8 @@ func (w *weatherApiJsonResponse) ToWeatherResponse() WeatherResponse {
 	}
 }
 
-func GetCurrentWeather(city string) (*WeatherResponse, error) {
-    config := config.GetConfig().WeatherApi
-    requestUrl := CreateUrl(config, city)
+func GetCurrentWeather(city string, conf *config.WeatherApiConfig) (*WeatherResponse, error) {
+    requestUrl := CreateUrl(conf, city)
 
     req, err := http.Get(requestUrl)
     if err != nil {

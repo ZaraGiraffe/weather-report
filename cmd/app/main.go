@@ -8,5 +8,5 @@ import (
 func main() {
 	go runServer()
 
-	
+	select {}
 }

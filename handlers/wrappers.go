@@ -6,6 +6,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"example.com/weather-report/restapi/operations/subscription"
 	"example.com/weather-report/restapi/operations/weather"
+	"example.com/weather-report/config"
 )
 
 func SubscribeHandlerWrapper(storage *sql.DB) func(subscription.SubscribeParams) middleware.Responder {
@@ -26,8 +27,8 @@ func ConfirmSubscriprionHandlerWrapper(storage *sql.DB) func(subscription.Confir
 	}
 }
 
-func GetWeatherHandlerWrapper(storage *sql.DB) func(weather.GetWeatherParams) middleware.Responder {
+func GetWeatherHandlerWrapper(conf *config.WeatherApiConfig) func(weather.GetWeatherParams) middleware.Responder {
 	return func(params weather.GetWeatherParams) middleware.Responder {
-		return getWeatherHandler(storage, params)
+		return getWeatherHandler(conf, params)
 	}
 }

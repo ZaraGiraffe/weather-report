@@ -15,6 +15,7 @@ import (
 
 	"example.com/weather-report/storage"
 	"example.com/weather-report/handlers"
+	"example.com/weather-report/config"
 )
 
 //go:generate swagger generate server --target ..\..\weather-report --name WeatherForecastAPI --spec ..\task.yaml --principal interface{}
@@ -46,9 +47,10 @@ func configureAPI(api *operations.WeatherForecastAPIAPI) http.Handler {
 	// subscription.SubscribeMaxParseMemory = 32 << 20
 
 	storage := storage.NewStorageConnection()
+	conf := config.GetConfig()
 
 	api.SubscriptionConfirmSubscriptionHandler = subscription.ConfirmSubscriptionHandlerFunc(handlers.ConfirmSubscriprionHandlerWrapper(storage))
-	api.WeatherGetWeatherHandler = weather.GetWeatherHandlerFunc(handlers.GetWeatherHandlerWrapper(storage))
+	api.WeatherGetWeatherHandler = weather.GetWeatherHandlerFunc(handlers.GetWeatherHandlerWrapper(&conf.WeatherApiConfig))
 	api.SubscriptionSubscribeHandler = subscription.SubscribeHandlerFunc(handlers.SubscribeHandlerWrapper(storage))
 	api.SubscriptionUnsubscribeHandler = subscription.UnsubscribeHandlerFunc(handlers.UnsubscribeHandlerWrapper(storage))
 

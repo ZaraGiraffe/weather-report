@@ -24,7 +24,7 @@ type WeatherApiConfig struct {
 
 type Config struct {
 	AppPassword string `json:"app-password"`
-	WeatherApi WeatherApiConfig `json:"weather-api"`
+	WeatherApiConfig WeatherApiConfig `json:"weather-api"`
 	StorageConfig StorageConfig `json:"storage-config"`
 }
 
@@ -35,7 +35,7 @@ func loadEnv() {
 	}
 }
 
-func getConfig(configPath string) Config {
+func getConfig(configPath string) *Config {
 	file, err := os.Open(configPath)
 	if err != nil {
 		log.Fatal("Error opening config file: ", err)
@@ -50,10 +50,10 @@ func getConfig(configPath string) Config {
 		log.Fatal("Error unmarshalling config file: ", err)
 	}
 	
-	return config
+	return &config
 }
 
-func GetConfig() Config {
+func GetConfig() *Config {
 	loadEnv()
 	configPath, present := os.LookupEnv("CONFIG")
 	if !present {
