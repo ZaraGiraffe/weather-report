@@ -8,11 +8,13 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/runtime/middleware"
 
 	"example.com/weather-report/restapi/operations"
 	"example.com/weather-report/restapi/operations/subscription"
 	"example.com/weather-report/restapi/operations/weather"
+
+	"example.com/weather-report/storage"
+	"example.com/weather-report/handlers"
 )
 
 //go:generate swagger generate server --target ..\..\weather-report --name WeatherForecastAPI --spec ..\task.yaml --principal interface{}
@@ -43,26 +45,12 @@ func configureAPI(api *operations.WeatherForecastAPIAPI) http.Handler {
 	// You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
 	// subscription.SubscribeMaxParseMemory = 32 << 20
 
-	if api.SubscriptionConfirmSubscriptionHandler == nil {
-		api.SubscriptionConfirmSubscriptionHandler = subscription.ConfirmSubscriptionHandlerFunc(func(params subscription.ConfirmSubscriptionParams) middleware.Responder {
-			return middleware.NotImplemented("operation subscription.ConfirmSubscription has not yet been implemented")
-		})
-	}
-	if api.WeatherGetWeatherHandler == nil {
-		api.WeatherGetWeatherHandler = weather.GetWeatherHandlerFunc(func(params weather.GetWeatherParams) middleware.Responder {
-			return middleware.NotImplemented("operation weather.GetWeather has not yet been implemented")
-		})
-	}
-	if api.SubscriptionSubscribeHandler == nil {
-		api.SubscriptionSubscribeHandler = subscription.SubscribeHandlerFunc(func(params subscription.SubscribeParams) middleware.Responder {
-			return middleware.NotImplemented("operation subscription.Subscribe has not yet been implemented")
-		})
-	}
-	if api.SubscriptionUnsubscribeHandler == nil {
-		api.SubscriptionUnsubscribeHandler = subscription.UnsubscribeHandlerFunc(func(params subscription.UnsubscribeParams) middleware.Responder {
-			return middleware.NotImplemented("operation subscription.Unsubscribe has not yet been implemented")
-		})
-	}
+	storage := storage.NewStorageConnection()
+
+	api.SubscriptionConfirmSubscriptionHandler = subscription.ConfirmSubscriptionHandlerFunc(handlers.ConfirmSubscriprionHandlerWrapper(storage))
+	api.WeatherGetWeatherHandler = weather.GetWeatherHandlerFunc(handlers.GetWeatherHandlerWrapper(storage))
+	api.SubscriptionSubscribeHandler = subscription.SubscribeHandlerFunc(handlers.SubscribeHandlerWrapper(storage))
+	api.SubscriptionUnsubscribeHandler = subscription.UnsubscribeHandlerFunc(handlers.UnsubscribeHandlerWrapper(storage))
 
 	api.PreServerShutdown = func() {}
 
