@@ -1,0 +1,26 @@
+{
+    "admin-email-config": {
+        "email": "...",
+        "app-password": "..."
+    },
+    "weather-api-config": {
+        "api-key": "...",
+        "url": "http://api.weatherapi.com/v1"
+    },
+    "storage-config": {
+        "host": "localhost",
+        "port": "5432",
+        "user": "postgres",
+        "password": "postgres",
+        "database": "postgres"
+    },
+    "smtp-server-config": {
+        "tls-port": "587",
+        "host": "smtp.gmail.com"
+    },
+    "server-config": {
+        "port": "8080",
+        "host": "localhost",
+        "tls-enabled": false
+    }
+}
