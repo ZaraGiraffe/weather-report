@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-
 	_ "github.com/lib/pq"
 )
 
@@ -78,4 +77,40 @@ func GetSubscriptionByEmail(db *sql.DB, email string) (*Subscription, error) {
 		log.Fatalf("ERROR: scan subscription query failed: %v", err)
 	}
 	return subscription, nil
+}
+
+func GetAllSubscriptionsWithTimeConstraint(db *sql.DB, timeConstraint int64, frequencyType int) []*Subscription {
+	rows, err := db.Query(
+		`SELECT * FROM subscriptions WHERE updated_at > $1 AND frequency_type = $2`,
+		timeConstraint,
+		frequencyType,
+	)
+	if err != nil {
+		log.Fatalf("ERROR: get all subscriptions with time constraint query failed: %v", err)
+	}
+	defer rows.Close()
+
+	subscriptions := []*Subscription{}
+	for rows.Next() {
+		subscription := &Subscription{}
+		err := rows.Scan(&subscription.Id, &subscription.Email, &subscription.City, &subscription.Created_at, &subscription.Updated_at, &subscription.Frequency_type, &subscription.Token, &subscription.Status)
+		if err != nil {
+			log.Fatalf("ERROR: scan subscription query failed: %v", err)
+		}
+		subscriptions = append(subscriptions, subscription)
+	}
+	return subscriptions
+}
+
+func UpdateSubscriptionLastSent(db *sql.DB, token string, lastSent int64) error {
+	_, err := db.Exec(fmt.Sprintf(
+		`UPDATE subscriptions SET updated_at = %d WHERE token = '%s'`,
+		lastSent,
+		token,
+	))
+	if err != nil {
+		log.Printf("ERROR: update subscription was deleted: %v", err)
+		return nil
+	}
+	return nil
 }

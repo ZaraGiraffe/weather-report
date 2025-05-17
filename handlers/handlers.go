@@ -24,9 +24,9 @@ func subscribeHandler(conf *config.Config, db *sql.DB, params subscription.Subsc
 	var frequencyType int
 	switch params.Frequency {
 	case "hourly":
-		frequencyType = storage.HOURLY_FREQUENCY
+		frequencyType = config.HOURLY_FREQUENCY
 	case "daily":
-		frequencyType = storage.DAILY_FREQUENCY
+		frequencyType = config.DAILY_FREQUENCY
 	default:
 		log.Println("Error bad frequency param")
 		return subscription.NewSubscribeBadRequest()
@@ -46,7 +46,7 @@ func subscribeHandler(conf *config.Config, db *sql.DB, params subscription.Subsc
 		Updated_at: time.Now().Unix(),
 		Frequency_type: frequencyType,
 		Token: token,
-		Status: storage.PENDING_STATUS,
+		Status: config.PENDING_STATUS,
 	}
 	err = storage.InsertDubscriptionQuery(db, new_subscription)
 	if err != nil {
@@ -82,7 +82,7 @@ func confirmSubscriptionHandler(db *sql.DB, params subscription.ConfirmSubscript
 			return subscription.NewConfirmSubscriptionNotFound()
 		}
 	}
-	storage.UpdateSubscriptionStatus(db, params.Token, storage.CONFIRMED_STATUS)
+	storage.UpdateSubscriptionStatus(db, params.Token, config.CONFIRMED_STATUS)
 	return subscription.NewConfirmSubscriptionOK()
 }
 

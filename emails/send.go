@@ -5,6 +5,7 @@ import (
 	"strconv"
     "fmt"
 	"example.com/weather-report/config"
+    "example.com/weather-report/weather-api"
 	"gopkg.in/mail.v2"
 )
 
@@ -54,4 +55,16 @@ func SendConfirmationEmail(
         message,
         conf,
     )
+}
+
+func SendWeatherReportEmail(
+    toEmail string,
+    weatherReport *weatherApi.WeatherResponse,
+    conf *config.Config,
+) error {
+    subject := "Weather Report"
+    message := fmt.Sprintf("Temperature: %f\nHumidity: %d\nDescription: %s", 
+        weatherReport.TempC, weatherReport.Humidity, weatherReport.Description)
+    
+    return sendEmail(toEmail, subject, message, conf)
 }
