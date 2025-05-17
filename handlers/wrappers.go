@@ -9,9 +9,9 @@ import (
 	"example.com/weather-report/config"
 )
 
-func SubscribeHandlerWrapper(storage *sql.DB) func(subscription.SubscribeParams) middleware.Responder {
+func SubscribeHandlerWrapper(conf *config.Config, storage *sql.DB) func(subscription.SubscribeParams) middleware.Responder {
 	return func(params subscription.SubscribeParams) middleware.Responder {
-		return subscribeHandler(storage, params)
+		return subscribeHandler(conf, storage, params)
 	}
 }
 

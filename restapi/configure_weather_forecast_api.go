@@ -51,7 +51,7 @@ func configureAPI(api *operations.WeatherForecastAPIAPI) http.Handler {
 
 	api.SubscriptionConfirmSubscriptionHandler = subscription.ConfirmSubscriptionHandlerFunc(handlers.ConfirmSubscriprionHandlerWrapper(storage))
 	api.WeatherGetWeatherHandler = weather.GetWeatherHandlerFunc(handlers.GetWeatherHandlerWrapper(&conf.WeatherApiConfig))
-	api.SubscriptionSubscribeHandler = subscription.SubscribeHandlerFunc(handlers.SubscribeHandlerWrapper(storage))
+	api.SubscriptionSubscribeHandler = subscription.SubscribeHandlerFunc(handlers.SubscribeHandlerWrapper(conf, storage))
 	api.SubscriptionUnsubscribeHandler = subscription.UnsubscribeHandlerFunc(handlers.UnsubscribeHandlerWrapper(storage))
 
 	api.PreServerShutdown = func() {}

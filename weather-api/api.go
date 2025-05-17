@@ -1,11 +1,13 @@
 package weatherApi
 
 import (
-	"example.com/weather-report/config"
-	"net/http"
-	"fmt"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
+	"log"
+	"net/http"
+	"example.com/weather-report/config"
 )
 
 func CreateUrl(conf *config.WeatherApiConfig, city string) string {
@@ -28,6 +30,13 @@ type WeatherResponse struct {
 	Description string
 }
 
+type errorJsonResponse struct {
+    Error struct {
+        Code int `json:"code"`
+        Message string `json:"message"`
+    } `json:"error"`
+}
+
 func (w *weatherApiJsonResponse) ToWeatherResponse() WeatherResponse {
 	return WeatherResponse{
 		TempC: w.Current.TempC,
@@ -36,31 +45,36 @@ func (w *weatherApiJsonResponse) ToWeatherResponse() WeatherResponse {
 	}
 }
 
+var ErrBadInput error = errors.New("bad input to the request")
+
 func GetCurrentWeather(city string, conf *config.WeatherApiConfig) (*WeatherResponse, error) {
     requestUrl := CreateUrl(conf, city)
 
     req, err := http.Get(requestUrl)
     if err != nil {
-        fmt.Println("Error creating request:", err)
+        log.Println("Error creating request:", err)
         return nil, err
     }
     defer req.Body.Close()
 
-    if req.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("API request failed with status: %d, status text: %s", req.StatusCode, req.Status)
-    }
-
     bodyBytes, err := io.ReadAll(req.Body)
     if err != nil {
-        fmt.Println("Error reading response body:", err)
+        log.Println("Error reading response body:", err)
         return nil, err
     }
 
     var weatherJsonResponse weatherApiJsonResponse
+    var errorJsonResponse errorJsonResponse
+    err = json.Unmarshal(bodyBytes, &errorJsonResponse)
+
+    if (err == nil && errorJsonResponse.Error.Code != 0) || req.StatusCode != http.StatusOK {
+        log.Println("Error input in request")
+        return nil, ErrBadInput
+    }
+
     err = json.Unmarshal(bodyBytes, &weatherJsonResponse)
     if err != nil {
-        fmt.Println("Error unmarshalling response:", err)
-        return nil, err
+        log.Fatalf("ERROR: in get current weather: %v", err)
     }
 
     weatherResponse := weatherJsonResponse.ToWeatherResponse()

@@ -1,41 +1,57 @@
-package main
+package emails
 
 import (
-    "log"
-    "net/smtp"
-	"time"
+	"log"
+	"strconv"
+    "fmt"
+	"example.com/weather-report/config"
+	"gopkg.in/mail.v2"
 )
 
-func main() {
-    send("hello bro, This just test.")
+
+func sendEmail(
+    toEmail string, 
+    subject string, 
+    message string, 
+    conf *config.Config,
+) error {
+    m := mail.NewMessage()
+    m.SetHeader("From", conf.AdminEmailConfig.Email)
+    m.SetHeader("To", toEmail)
+    m.SetHeader("Subject", subject)
+    m.SetBody("text/plain", message)
+
+    tlsPort, err := strconv.Atoi(conf.SmtpServerConfig.TlsPort)
+    if err != nil {
+        log.Printf("Error converting TLS port to int: %s", err)
+        return err
+    }
+    d := mail.NewDialer(
+        conf.SmtpServerConfig.Host, 
+        tlsPort, 
+        conf.AdminEmailConfig.Email, 
+        conf.AdminEmailConfig.AppPassword,
+    )
+    
+    if err := d.DialAndSend(m); err != nil {
+        log.Printf("Error sending email: %s", err)
+        return err
+    }
+    return nil
 }
 
-func send(body string) {
-    from := "znaumets@gmail.com"
-    pass := "dydechqszncoqhck"
-    to := "kchkskpr@gmail.com"
-
-    msg := "From: " + from + "\n" +
-        "To: " + to + "\n" +
-        "Subject: Hello there 2\n\n" +
-        body
-	
-	start_time := time.Now()
-	log.Println("Start sending email at: " + start_time.String())
-
-    err := smtp.SendMail("smtp.gmail.com:587",
-        smtp.PlainAuth("", from, pass, "smtp.gmail.com"),
-        from, 
-		[]string{to}, 
-		[]byte(msg),
-	)
-
-	end_time := time.Now()
-	log.Println("End sending email at: " + end_time.String())
-
-    if err != nil {
-        log.Printf("smtp error: %s", err)
-        return
-    }
-    log.Println("Successfully sended to " + to)
+func SendConfirmationEmail(
+    toEmail string, 
+    token string,
+    conf *config.Config,
+) error {
+    subject := "Weather Report Confirmation"
+    message := fmt.Sprintf("Your token: %s", token)
+    
+    return sendEmail(
+        toEmail,
+        subject,
+        message,
+        conf,
+    )
 }
