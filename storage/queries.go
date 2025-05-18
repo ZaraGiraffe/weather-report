@@ -6,17 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"log"
+
 	_ "github.com/lib/pq"
 )
 
-func InsertDubscriptionQuery(db *sql.DB, subscription *Subscription) error {
+func InsertSubscriptionQuery(db *sql.DB, subscription *Subscription) error {
 	_, err := db.Exec(fmt.Sprintf(
 		`INSERT INTO subscriptions (email, city, created_at, updated_at, frequency_type, token, status) VALUES ('%s', '%s', %d, %d, %d, '%s', %d)`,
 		subscription.Email,
 		subscription.City,
-		subscription.Created_at,
-		subscription.Updated_at,
-		subscription.Frequency_type,
+		subscription.CreatedAt,
+		subscription.UpdatedAt,
+		subscription.FrequencyType,
 		subscription.Token,
 		subscription.Status,
 	))
@@ -29,11 +30,11 @@ func InsertDubscriptionQuery(db *sql.DB, subscription *Subscription) error {
 
 func GetSubscriptionByToken(db *sql.DB, token string) (*Subscription, error) {
 	row := db.QueryRow(
-		`SELECT id FROM subscriptions WHERE token = $1`, token,
+		`SELECT id, email, token, city, created_at, updated_at, frequency_type, status FROM subscriptions WHERE token = $1`, token,
 	)
 
 	subscription := &Subscription{}
-	err := row.Scan(&subscription.Id)
+	err := row.Scan(&subscription.Id, &subscription.Email, &subscription.Token, &subscription.City, &subscription.CreatedAt, &subscription.UpdatedAt, &subscription.FrequencyType, &subscription.Status)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -69,10 +70,10 @@ func DeleteSubscriptionByToken(db *sql.DB, token string) error {
 
 func GetSubscriptionByEmail(db *sql.DB, email string) (*Subscription, error) {
 	row := db.QueryRow(
-		`SELECT id FROM subscriptions WHERE email = $1`, email,
+		`SELECT id, email, token, city, created_at, updated_at, frequency_type, status FROM subscriptions WHERE email = $1`, email,
 	)
 	subscription := &Subscription{}
-	err := row.Scan(&subscription.Id)
+	err := row.Scan(&subscription.Id, &subscription.Email, &subscription.Token, &subscription.City, &subscription.CreatedAt, &subscription.UpdatedAt, &subscription.FrequencyType, &subscription.Status)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -99,7 +100,7 @@ func GetAllSubscriptionsWithTimeConstraint(db *sql.DB, timeConstraint int64, fre
 	subscriptions := []*Subscription{}
 	for rows.Next() {
 		subscription := &Subscription{}
-		err := rows.Scan(&subscription.Id, &subscription.Email, &subscription.City, &subscription.Created_at, &subscription.Updated_at, &subscription.Frequency_type, &subscription.Token, &subscription.Status)
+		err := rows.Scan(&subscription.Id, &subscription.Email, &subscription.City, &subscription.CreatedAt, &subscription.UpdatedAt, &subscription.FrequencyType, &subscription.Token, &subscription.Status)
 		if err != nil {
 			log.Printf("ERROR: get all subscriptions with time constraint query failed: %v", err)
 			return nil, err

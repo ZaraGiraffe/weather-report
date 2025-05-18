@@ -1,3 +1,4 @@
 *dev*
 .env
 config.json
+test.config.json

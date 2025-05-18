@@ -4,17 +4,18 @@ package handlers
 
 import (
 	"database/sql"
-	"example.com/weather-report/storage"
-	"example.com/weather-report/config"
-	"example.com/weather-report/restapi/operations/subscription"
-	"example.com/weather-report/restapi/operations/weather"
-	"example.com/weather-report/weather-api"
-	"example.com/weather-report/emails"
-	"github.com/go-openapi/runtime/middleware"
-	"github.com/google/uuid"
-	"time"
 	"errors"
 	"log"
+	"time"
+
+	"example.com/weather-report/config"
+	"example.com/weather-report/emails"
+	"example.com/weather-report/restapi/operations/subscription"
+	"example.com/weather-report/restapi/operations/weather"
+	"example.com/weather-report/storage"
+	weatherApi "example.com/weather-report/weather-api"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/google/uuid"
 )
 
 func subscribeHandler(conf *config.Config, db *sql.DB, params subscription.SubscribeParams) middleware.Responder {
@@ -43,15 +44,15 @@ func subscribeHandler(conf *config.Config, db *sql.DB, params subscription.Subsc
 
 	token := uuid.New().String()
 	new_subscription := &storage.Subscription{
-		Email: params.Email,
-		City: params.City,
-		Created_at: time.Now().Unix(),
-		Updated_at: time.Now().Unix(),
-		Frequency_type: frequencyType,
-		Token: token,
-		Status: config.PENDING_STATUS,
+		Email:         params.Email,
+		City:          params.City,
+		CreatedAt:     time.Now().Unix(),
+		UpdatedAt:     time.Now().Unix(),
+		FrequencyType: frequencyType,
+		Token:         token,
+		Status:        config.PENDING_STATUS,
 	}
-	err = storage.InsertDubscriptionQuery(db, new_subscription)
+	err = storage.InsertSubscriptionQuery(db, new_subscription)
 	if err != nil {
 		log.Printf("ERROR: problem with inserting new subscription: %v", err)
 		return subscription.NewSubscribeBadRequest()
@@ -110,7 +111,7 @@ func confirmSubscriptionHandler(db *sql.DB, params subscription.ConfirmSubscript
 	return subscription.NewConfirmSubscriptionOK()
 }
 
-func getWeatherHandler(conf *config.WeatherApiConfig,params weather.GetWeatherParams) middleware.Responder {
+func getWeatherHandler(conf *config.WeatherApiConfig, params weather.GetWeatherParams) middleware.Responder {
 	response, err := weatherApi.GetCurrentWeather(params.City, conf)
 	if err != nil {
 		if errors.Is(err, weatherApi.ErrBadInput) {
@@ -125,7 +126,7 @@ func getWeatherHandler(conf *config.WeatherApiConfig,params weather.GetWeatherPa
 	handlerRespone := weather.NewGetWeatherOK()
 	handlerRespone.SetPayload(&weather.GetWeatherOKBody{
 		Description: response.Description,
-		Humidity: float64(response.Humidity),
+		Humidity:    float64(response.Humidity),
 		Temperature: response.TempC,
 	})
 

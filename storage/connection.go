@@ -26,8 +26,8 @@ func newStorageConnection(conf config.StorageConfig) *sql.DB {
 	return db
 }
 
-func NewStorageConnection() *sql.DB {
-	conf := config.GetConfig()
+func NewStorageConnection(optConfigPath ...string) *sql.DB {
+	conf := config.GetConfig(optConfigPath...)
 	conn := newStorageConnection(conf.StorageConfig)
 	log.Println("INFO: Connected to database")
 	return conn

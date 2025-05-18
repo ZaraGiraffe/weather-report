@@ -8,6 +8,8 @@ import (
 	
 
 func main() {
+	config.LoadEnv()
+
 	processor := processor.NewProcessor(config.GetConfig(), storage.NewStorageConnection())
 	go processor.Run()
 

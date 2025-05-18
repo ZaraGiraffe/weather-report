@@ -35,3 +35,12 @@ psql -f ./migrations/up.sql -U postgres -h localhost -p 5433
 ```
 `psql` tool should be installed.
 
+## Testing
+At present all tests are integration tests. Therefore some setup is needed for tests.
+1. Create `test.config.json` file.
+2. Run the following command to run every test:
+```bash
+go test ./...
+```
+
+## Architecture
