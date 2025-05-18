@@ -1,3 +1,4 @@
+// This package is responsible for storing constants
 package config
 
 var HOURLY_FREQUENCY int = 60

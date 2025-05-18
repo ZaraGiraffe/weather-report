@@ -1,3 +1,4 @@
+// This package is responsible for wrapping handlers into go-swagger middleware
 package handlers
 
 import (

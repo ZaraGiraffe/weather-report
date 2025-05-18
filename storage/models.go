@@ -1,3 +1,4 @@
+// This package is responsible for storing the models for the database
 package storage
 
 import (

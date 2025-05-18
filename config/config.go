@@ -1,5 +1,5 @@
+// This package is responsible for loading the configuration from the config file
 package config
-
 
 import (
     "log"

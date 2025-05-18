@@ -1,3 +1,4 @@
+// This package is responsible for fetching the weather data from the weather API   
 package weatherApi
 
 import (
@@ -74,7 +75,8 @@ func GetCurrentWeather(city string, conf *config.WeatherApiConfig) (*WeatherResp
 
     err = json.Unmarshal(bodyBytes, &weatherJsonResponse)
     if err != nil {
-        log.Fatalf("ERROR: in get current weather: %v", err)
+        log.Printf("ERROR: in get current weather: %v", err)
+        return nil, err
     }
 
     weatherResponse := weatherJsonResponse.ToWeatherResponse()

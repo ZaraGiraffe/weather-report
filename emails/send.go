@@ -1,3 +1,4 @@
+// This package is responsible for sending emails to the users
 package emails
 
 import (
@@ -9,7 +10,7 @@ import (
 	"gopkg.in/mail.v2"
 )
 
-
+// This function sends general emails to the user
 func sendEmail(
     toEmail string, 
     subject string, 
@@ -41,6 +42,7 @@ func sendEmail(
     return nil
 }
 
+// This function sends a confirmation email to the user
 func SendConfirmationEmail(
     toEmail string, 
     token string,
@@ -57,6 +59,7 @@ func SendConfirmationEmail(
     )
 }
 
+// This function sends a weather report email to the user
 func SendWeatherReportEmail(
     toEmail string,
     weatherReport *weatherApi.WeatherResponse,

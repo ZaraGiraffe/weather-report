@@ -1,3 +1,5 @@
+// This package is responsible for sending regular weather report emails to the users
+// It always runs in the background and sends emails to the users based on the frequency of the subscriptions
 package processor
 
 import (
@@ -11,6 +13,7 @@ import (
 	"example.com/weather-report/weather-api"
 )
 
+// The time to sleep between each iteration of the loop
 var SLEEP_TIME_MINUTES int = 1
 
 type Processor struct {
@@ -27,21 +30,33 @@ func NewProcessor(conf *config.Config, db *sql.DB) *Processor {
 
 func (p *Processor) Run() {
 	for {
+		log.Println("INFO: Starting processor cycle")
+
 		frequencies := []int{config.HOURLY_FREQUENCY, config.DAILY_FREQUENCY}
 		for _, frequency := range frequencies {
 			timeConstraint := time.Now().Add(-time.Duration(frequency) * time.Minute).Unix()
-			rows := storage.GetAllSubscriptionsWithTimeConstraint(p.db, timeConstraint, frequency)
+			rows, err := storage.GetAllSubscriptionsWithTimeConstraint(p.db, timeConstraint, frequency)
+			if err != nil {
+				log.Printf("ERROR: problem with getting all subscriptions with time constraint: %v", err)
+				continue
+			}
+
 			for _, row := range rows {
 				if row.Status == config.CONFIRMED_STATUS {
 					weatherReport, err := weatherApi.GetCurrentWeather(row.City, &p.conf.WeatherApiConfig)
 					if err != nil {
-						log.Fatalf("ERROR: get current weather query failed: %v", err)
+						log.Printf("ERROR: get current weather query failed, maybe it was deleted: %v", err)
+						continue
 					}
 					emails.SendWeatherReportEmail(row.Email, weatherReport, p.conf)
-					storage.UpdateSubscriptionLastSent(p.db, row.Token, time.Now().Unix())
+					err = storage.UpdateSubscriptionLastSent(p.db, row.Token, time.Now().Unix())
+					if err != nil {
+						log.Printf("ERROR: problem with updating subscription last sent: %v", err)
+					}
 				}
 			}
 		}
+
 		time.Sleep(time.Duration(SLEEP_TIME_MINUTES) * time.Minute)
 	}
 }

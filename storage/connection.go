@@ -1,3 +1,4 @@
+// This package is responsible for creating a connection to the database
 package storage
 
 import (
@@ -27,5 +28,7 @@ func newStorageConnection(conf config.StorageConfig) *sql.DB {
 
 func NewStorageConnection() *sql.DB {
 	conf := config.GetConfig()
-	return newStorageConnection(conf.StorageConfig)
+	conn := newStorageConnection(conf.StorageConfig)
+	log.Println("INFO: Connected to database")
+	return conn
 }
